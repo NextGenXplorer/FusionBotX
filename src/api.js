@@ -1,3 +1,5 @@
+import { MINI_CHAT_BOT_PERSONA } from './persona.js';
+
 // Access the Gemini API key from environment variables
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
@@ -21,6 +23,9 @@ export const fetchBotResponse = async (userInput) => {
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: userInput }] }],
+        system_instruction: {
+          parts: [{ text: MINI_CHAT_BOT_PERSONA }],
+        },
       }),
     });
 
