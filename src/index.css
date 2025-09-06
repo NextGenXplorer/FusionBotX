@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #8b5cf6; /* a nice pastel purple */
+  --color-secondary: #ec4899; /* a pastel pink */
+  --color-background: #f9fafb; /* light gray */
+  --color-foreground: #1f2937; /* dark gray */
+  --color-bubble-user: #3b82f6; /* blue */
+  --color-bubble-bot: #e5e7eb; /* light gray */
+}
+
+.dark {
+  --color-primary: #a78bfa; /* lighter purple for dark mode */
+  --color-secondary: #f472b6; /* lighter pink for dark mode */
+  --color-background: #1f2937; /* dark gray */
+  --color-foreground: #f9fafb; /* light gray */
+  --color-bubble-user: #2563eb; /* slightly darker blue */
+  --color-bubble-bot: #4b5563; /* medium gray */
+}
+
+body {
+  @apply bg-background text-foreground;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
