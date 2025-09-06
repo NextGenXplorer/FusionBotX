@@ -1,5 +1,5 @@
 {
-  "name": "temp-react-project",
+  "name": "ministudychatbot",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "autoprefixer": "^10.4.21",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.542.0",
@@ -17,6 +18,8 @@
     "postcss": "^8.5.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {

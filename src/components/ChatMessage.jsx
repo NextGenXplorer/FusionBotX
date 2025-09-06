@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { User, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ChatMessage = ({ message }) => {
   const { text, sender } = message;
@@ -19,9 +21,17 @@ const ChatMessage = ({ message }) => {
       </div>
       {/* Bubble */}
       <div
-        className={`max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-xl shadow-soft ${isUser ? 'bg-bubble-user text-white order-1' : 'bg-bubble-bot text-foreground'}`}
+        className={`max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-xl shadow-soft ${isUser ? 'bg-bubble-user text-white' : 'bg-bubble-bot text-foreground'}`}
       >
-        <p className="text-sm break-words">{text}</p>
+        {isUser ? (
+          <p className="text-sm break-words">{text}</p>
+        ) : (
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {text}
+            </ReactMarkdown>
+          </div>
+        )}
       </div>
     </motion.div>
   );
