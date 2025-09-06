@@ -1,29 +1,20 @@
-// A placeholder for the actual Gemini API key.
-// IMPORTANT: In a real application, this key should be stored securely
-// and not exposed in the client-side code. It's best to have a backend
-// server that communicates with the Gemini API.
-const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
+// Access the Gemini API key from environment variables
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
 /**
- * Simulates fetching a response from the Gemini API.
+ * Fetches a response from the real Gemini API.
  * @param {string} userInput The message from the user.
  * @returns {Promise<string>} A promise that resolves with the bot's response.
  */
 export const fetchBotResponse = async (userInput) => {
-  console.log('Sending to mock API:', userInput);
+  // Check if the API key is missing
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+    return 'API key not found. Please add your Gemini API key to the .env file.';
+  }
 
-  // This is a mock API call. We're using setTimeout to simulate network latency.
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const mockResponse = `This is a simulated response to your message: "${userInput}". In a real app, this would be a helpful, AI-generated answer. Remember to replace the placeholder API key in api.js!`;
-      resolve(mockResponse);
-    }, 1500); // 1.5-second delay to simulate API response time
-  });
-
-  /*
-  // Example of a real API call (for future implementation):
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -34,17 +25,27 @@ export const fetchBotResponse = async (userInput) => {
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed with status: ${response.status}`);
+      // Try to parse the error response from the API
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.error?.message || `API call failed with status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
+
     // The actual path to the response text might differ based on the Gemini API version.
-    // Please check the API documentation.
-    const botMessage = data.candidates[0].content.parts[0].text;
+    // This path is based on common structures for the gemini-pro model.
+    const botMessage = data.candidates[0]?.content?.parts[0]?.text;
+
+    if (!botMessage) {
+      throw new Error('Could not parse a valid response from the API.');
+    }
+
     return botMessage;
+
   } catch (error) {
     console.error('Error fetching from Gemini API:', error);
-    return 'Sorry, something went wrong while trying to connect to the AI. Please try again later.';
+    // Return a user-friendly error message
+    return `Sorry, something went wrong while trying to connect to the AI: ${error.message}`;
   }
-  */
 };
