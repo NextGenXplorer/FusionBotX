@@ -54,4 +54,4 @@ Once you've completed the installation steps, you can run the development server
 npm run dev
 ```
 
-This will start the application on a local server, usually `http://localhost:5173`. Open this URL in your browser to see the app in action.
+This will start the application on a local server, usually `http://localhost:5000`. Open this URL in your browser to see the app in action.
