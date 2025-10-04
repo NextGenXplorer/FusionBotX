@@ -296,6 +296,15 @@ export const generateVideo = async (prompt) => {
     throw new Error('No valid video URL found in API response. Check console for details.');
   } catch (error) {
     console.error('Error generating video:', error);
+
+    // Try to extract video URL from error message if it contains one
+    const urlMatch = error.message.match(/(https?:\/\/[^\s]+\.mp4)/);
+    if (urlMatch) {
+      const videoUrl = urlMatch[1];
+      console.log('Found video URL in error message:', videoUrl);
+      return `Here's your generated video:\n\n<video controls src="${videoUrl}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
+    }
+
     return `Sorry, I couldn't generate the video: ${error.message}`;
   }
 };
