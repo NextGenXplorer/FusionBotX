@@ -243,51 +243,57 @@ export const generateVideo = async (prompt) => {
     const data = await response.json();
     console.log('Video generation response:', data);
 
-    const { output } = data;
+    // Try to extract video URL from various possible response formats
+    let videoUrl = null;
 
-    if (!output) {
-      throw new Error('No output received from video generation API');
-    }
+    // Check if response has output property
+    if (data.output) {
+      console.log('Video output type:', typeof data.output);
+      console.log('Video output value:', data.output);
 
-    console.log('Video output type:', typeof output);
-    console.log('Video output value:', output);
-
-    // Handle different output formats
-    // If output is a direct URL string
-    if (typeof output === 'string' && output.startsWith('http')) {
-      return `Here's your generated video:\n\n<video controls src="${output}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
-    }
-
-    // If output is an array of URLs
-    if (Array.isArray(output) && output.length > 0) {
-      const videoUrl = output[0];
-      if (typeof videoUrl === 'string' && videoUrl.startsWith('http')) {
-        return `Here's your generated video:\n\n<video controls src="${videoUrl}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
+      // If output is a direct URL string
+      if (typeof data.output === 'string' && data.output.startsWith('http')) {
+        videoUrl = data.output;
       }
-    }
-
-    // If output is an object with URL property
-    if (typeof output === 'object' && output !== null) {
-      const possibleUrls = [
-        output.url,
-        output.video_url,
-        output.videoUrl,
-        output.file,
-        output.path,
-        output.link
-      ];
-
-      for (const url of possibleUrls) {
-        if (url && typeof url === 'string' && url.startsWith('http')) {
-          return `Here's your generated video:\n\n<video controls src="${url}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
+      // If output is an array of URLs
+      else if (Array.isArray(data.output) && data.output.length > 0) {
+        const firstItem = data.output[0];
+        if (typeof firstItem === 'string' && firstItem.startsWith('http')) {
+          videoUrl = firstItem;
+        }
+      }
+      // If output is an object with URL property
+      else if (typeof data.output === 'object' && data.output !== null) {
+        const possibleKeys = ['url', 'video_url', 'videoUrl', 'file', 'path', 'link'];
+        for (const key of possibleKeys) {
+          if (data.output[key] && typeof data.output[key] === 'string' && data.output[key].startsWith('http')) {
+            videoUrl = data.output[key];
+            break;
+          }
         }
       }
     }
 
-    // If we can't determine the format, return debug info
-    console.error('Unexpected video output format:', output);
-    const debugInfo = `Output type: ${typeof output}, ${Array.isArray(output) ? 'Array length: ' + output.length : 'Keys: ' + (output && typeof output === 'object' ? Object.keys(output).join(', ') : 'N/A')}`;
-    throw new Error(`Unexpected output format. ${debugInfo}. Check console for details.`);
+    // Check if response has direct URL properties
+    if (!videoUrl) {
+      const possibleKeys = ['url', 'video_url', 'videoUrl', 'video', 'file', 'path', 'link'];
+      for (const key of possibleKeys) {
+        if (data[key] && typeof data[key] === 'string' && data[key].startsWith('http')) {
+          videoUrl = data[key];
+          break;
+        }
+      }
+    }
+
+    // If we found a valid video URL, return it
+    if (videoUrl) {
+      console.log('Found video URL:', videoUrl);
+      return `Here's your generated video:\n\n<video controls src="${videoUrl}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
+    }
+
+    // If we couldn't find a URL, log the full response for debugging
+    console.error('Could not extract video URL from response:', JSON.stringify(data, null, 2));
+    throw new Error('No valid video URL found in API response. Check console for details.');
   } catch (error) {
     console.error('Error generating video:', error);
     return `Sorry, I couldn't generate the video: ${error.message}`;
