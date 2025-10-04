@@ -6,6 +6,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 const POLLINATION_API_URL = 'https://image.pollinations.ai/prompt/';
 const TTS_API_URL = 'https://gttsapi.onrender.com/tts';
+const VIDEO_API_URL = 'https://gttsapi.onrender.com/video';
 
 // Debug: Log API key status (not the actual key)
 console.log('API Key loaded:', GEMINI_API_KEY ? 'Yes' : 'No');
@@ -214,7 +215,7 @@ export const generateTTS = async (text) => {
 };
 
 /**
- * Generates a video using Bytez AI via backend server
+ * Generates a video using Bytez AI via GttsApi backend
  * @param {string} prompt The video generation prompt
  * @returns {Promise<string>} A promise that resolves with video player markdown
  */
@@ -223,16 +224,10 @@ export const generateVideo = async (prompt) => {
     const cleanPrompt = extractVideoPrompt(prompt);
 
     console.log('Generating video for:', cleanPrompt);
+    console.log('Using GttsApi URL:', VIDEO_API_URL);
 
-    // Determine API URL - use Netlify function in production, localhost in development
-    const apiUrl = import.meta.env.PROD
-      ? '/.netlify/functions/generate-video'
-      : 'http://localhost:3001/api/generate-video';
-
-    console.log('Using API URL:', apiUrl);
-
-    // Call backend API
-    const response = await fetch(apiUrl, {
+    // Call GttsApi video endpoint
+    const response = await fetch(VIDEO_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
