@@ -220,8 +220,9 @@ export const generateTTS = async (text) => {
  * @returns {Promise<string>} A promise that resolves with video player markdown
  */
 export const generateVideo = async (prompt) => {
+  const cleanPrompt = extractVideoPrompt(prompt);
+
   try {
-    const cleanPrompt = extractVideoPrompt(prompt);
 
     console.log('Generating video for:', cleanPrompt);
     console.log('Using GttsApi URL:', VIDEO_API_URL);
