@@ -1,10 +1,28 @@
 import Bytez from 'bytez.js';
 
 export const handler = async (event) => {
+  // CORS headers for all responses
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: '',
+    };
+  }
+
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
+      headers,
       body: JSON.stringify({ error: 'Method Not Allowed' }),
     };
   }
@@ -15,16 +33,20 @@ export const handler = async (event) => {
     if (!prompt) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ error: 'Prompt is required' }),
       };
     }
 
-    const BYTEZ_API_KEY = process.env.VITE_BYTEZ_API_KEY;
+    // Fix: Remove VITE_ prefix for Netlify Functions
+    const BYTEZ_API_KEY = process.env.BYTEZ_API_KEY;
 
     if (!BYTEZ_API_KEY) {
+      console.error('BYTEZ_API_KEY environment variable not set');
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Bytez API key not configured' }),
+        headers,
+        body: JSON.stringify({ error: 'Bytez API key not configured. Please set BYTEZ_API_KEY in Netlify environment variables.' }),
       };
     }
 
@@ -39,6 +61,7 @@ export const handler = async (event) => {
       console.error('Bytez error:', error);
       return {
         statusCode: 500,
+        headers,
         body: JSON.stringify({ error }),
       };
     }
@@ -47,11 +70,7 @@ export const handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers,
       body: JSON.stringify({ output }),
     };
 
@@ -59,6 +78,7 @@ export const handler = async (event) => {
     console.error('Server error:', error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: error.message }),
     };
   }
