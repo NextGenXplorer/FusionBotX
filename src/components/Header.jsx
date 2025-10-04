@@ -19,11 +19,11 @@ const Header = ({ onMenuClick }) => {
           <div className="flex items-center justify-center gap-2 mb-1 md:mb-2">
             <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-orange-600 dark:text-orange-400 animate-pulse" />
             <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 dark:from-orange-400 dark:via-orange-300 dark:to-amber-400 bg-clip-text text-transparent">
-              MiniChatBot
+              FusionBotX
             </h1>
           </div>
           <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
-            Your AI-powered study companion
+            Your AI-powered assistant
           </p>
         </div>
 
