@@ -5,7 +5,7 @@
   command = "npm run build"
 
   # The directory that contains the built site.
-  publish = "dist"
+  publish = "build"
 
   # Serverless functions directory
   functions = "netlify/functions"
