@@ -2,36 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-primary: #6366f1;
-  --color-primary-dark: #4f46e5;
-  --color-secondary: #8b5cf6;
-  --color-accent: #ec4899;
-  --color-background: #ffffff;
-  --color-surface: #f8fafc;
-  --color-foreground: #0f172a;
-  --color-muted: #64748b;
-  --color-bubble-user: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --color-bubble-bot: #f1f5f9;
-  --color-border: #e2e8f0;
-}
-
-.dark {
-  --color-primary: #818cf8;
-  --color-primary-dark: #6366f1;
-  --color-secondary: #a78bfa;
-  --color-accent: #f472b6;
-  --color-background: #0f172a;
-  --color-surface: #1e293b;
-  --color-foreground: #f1f5f9;
-  --color-muted: #94a3b8;
-  --color-bubble-user: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --color-bubble-bot: #334155;
-  --color-border: #334155;
-}
-
 body {
-  @apply bg-background text-foreground;
+  @apply bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -50,10 +22,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-muted);
+  @apply bg-slate-400 dark:bg-slate-600;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  @apply bg-indigo-500;
 }

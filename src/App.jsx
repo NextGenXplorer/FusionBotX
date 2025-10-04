@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import ChatWindow from './components/ChatWindow';
 import DarkModeToggle from './components/DarkModeToggle';
 import Sidebar from './components/Sidebar';
+import { fetchBotResponse } from './api.js';
 
 // This function will be used to create a new chat session
 const createNewSession = () => ({
@@ -88,7 +89,7 @@ function App() {
   };
 
   // The main logic for handling a user's message
-  const handleSendMessage = async (userInput) => {
+  const handleSendMessage = async (userInput, imageData = null) => {
     if (!userInput.trim() || isLoading) return;
 
     const userMessage = { sender: 'user', text: userInput };
@@ -98,11 +99,46 @@ function App() {
     try {
       // Get the message history for the active session for context
       const messageHistory = activeSession.messages;
-      const botResponse = await fetchBotResponse(userInput, messageHistory);
+      console.log('Sending message:', userInput);
+      console.log('Has image:', !!imageData);
+      console.log('History length:', messageHistory.length);
+
+      const botResponse = await fetchBotResponse(userInput, messageHistory, imageData);
+      console.log('Bot response received:', botResponse?.substring(0, 100));
+
       const botMessage = { sender: 'bot', text: botResponse };
       addMessageToSession(botMessage);
     } catch (error) {
-      const errorMessage = { sender: 'bot', text: "Sorry, I couldn't get a response. Please try again." };
+      console.error('Error in handleSendMessage:', error);
+      const errorMessage = { sender: 'bot', text: `Error: ${error.message || "Sorry, I couldn't get a response. Please try again."}` };
+      addMessageToSession(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler for image uploads
+  const handleImageUpload = async (imageData, prompt) => {
+    // Show the uploaded image in chat history
+    const imageMessage = {
+      sender: 'user',
+      text: `![Uploaded Image](${imageData})\n\n${prompt}`
+    };
+    addMessageToSession(imageMessage);
+    setIsLoading(true);
+
+    try {
+      const messageHistory = activeSession.messages;
+      console.log('Sending image with prompt:', prompt);
+
+      const botResponse = await fetchBotResponse(prompt, messageHistory, imageData);
+      console.log('Bot response received:', botResponse?.substring(0, 100));
+
+      const botMessage = { sender: 'bot', text: botResponse };
+      addMessageToSession(botMessage);
+    } catch (error) {
+      console.error('Error in handleImageUpload:', error);
+      const errorMessage = { sender: 'bot', text: `Error: ${error.message || "Sorry, I couldn't analyze the image. Please try again."}` };
       addMessageToSession(errorMessage);
     } finally {
       setIsLoading(false);
@@ -151,35 +187,55 @@ function App() {
     }
   };
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className="flex flex-col h-screen bg-[var(--color-background)] text-foreground font-sans">
-      <Header />
-      <div className="flex flex-grow overflow-hidden">
+    <div className="flex h-screen bg-white dark:bg-slate-900 font-sans overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-20 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Full Height */}
+      <div className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-30 md:z-0 transition-transform duration-300 h-screen`}>
         <Sidebar
           sessions={sessions}
           activeSessionId={activeSessionId}
           onNewChat={handleNewChat}
-          onSwitchChat={handleSwitchChat}
+          onSwitchChat={(id) => {
+            handleSwitchChat(id);
+            setIsSidebarOpen(false);
+          }}
           onDeleteChat={handleDeleteChat}
         />
-        <main className="flex-grow flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-gradient-to-br from-indigo-50/30 via-purple-50/30 to-pink-50/30 dark:from-indigo-950/10 dark:via-purple-950/10 dark:to-pink-950/10">
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex flex-col flex-1 h-screen overflow-hidden">
+        <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+
+        <main className="flex-grow flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden bg-gradient-to-br from-orange-50/30 via-amber-50/30 to-yellow-50/30 dark:from-orange-950/10 dark:via-amber-950/10 dark:to-yellow-950/10">
           {activeSession ? (
             <ChatWindow
               messages={activeSession.messages}
               isLoading={isLoading}
               onSendMessage={handleSendMessage}
               onClearChat={handleClearChat}
+              onImageUpload={handleImageUpload}
             />
           ) : (
             <div className="text-center">
-              <p className="text-[var(--color-muted)]">Loading chats...</p>
+              <p className="text-slate-600 dark:text-slate-400">Loading chats...</p>
             </div>
           )}
         </main>
-      </div>
-      <Footer />
-      <div className="absolute top-4 right-4 z-10">
-        <DarkModeToggle isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+        <Footer />
+        <div className="absolute top-3 right-3 md:top-4 md:right-4 z-10">
+          <DarkModeToggle isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+        </div>
       </div>
     </div>
   );
