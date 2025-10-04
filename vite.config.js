@@ -8,6 +8,6 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5000,
     // Allows access from specified deployment hosts
-    allowedHosts: ['.onrender.com', '.netlify.app'],
+    allowedHosts: ['.onrender.com', '.netlify.app', '.serveo.net'],
   },
 })

@@ -5,6 +5,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 // Using v1 API with Gemini 2.0 Flash - verified working model
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 const POLLINATION_API_URL = 'https://image.pollinations.ai/prompt/';
+const TTS_API_URL = 'https://gttsapi.onrender.com/tts';
 
 // Debug: Log API key status (not the actual key)
 console.log('API Key loaded:', GEMINI_API_KEY ? 'Yes' : 'No');
@@ -29,6 +30,23 @@ const isImageRequest = (userInput) => {
   ];
   const lowerInput = userInput.toLowerCase();
   return imageKeywords.some(keyword => lowerInput.includes(keyword));
+};
+
+/**
+ * Detects if the user is requesting text-to-speech
+ * @param {string} userInput The user's message
+ * @returns {boolean} True if TTS is requested
+ */
+const isTTSRequest = (userInput) => {
+  const ttsKeywords = [
+    'read this',
+    'speak this',
+    'say this',
+    'text to speech',
+    'tts'
+  ];
+  const lowerInput = userInput.toLowerCase();
+  return ttsKeywords.some(keyword => lowerInput.includes(keyword));
 };
 
 /**
@@ -57,6 +75,30 @@ const extractImagePrompt = (userInput) => {
 };
 
 /**
+ * Extracts the TTS text from user input
+ * @param {string} userInput The user's message
+ * @returns {string} The extracted text
+ */
+const extractTTSText = (userInput) => {
+  const patterns = [
+    /read this:?\s*(.+)/i,
+    /speak this:?\s*(.+)/i,
+    /say this:?\s*(.+)/i,
+    /text to speech:?\s*(.+)/i,
+    /tts:?\s*(.+)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = userInput.match(pattern);
+    if (match) {
+      return match[1].trim();
+    }
+  }
+
+  return userInput;
+};
+
+/**
  * Generates an image using Pollinations AI
  * @param {string} prompt The image generation prompt
  * @returns {Promise<string>} A promise that resolves with markdown image
@@ -72,6 +114,58 @@ export const generateImage = async (prompt) => {
   } catch (error) {
     console.error('Error generating image:', error);
     return `Sorry, I couldn't generate the image: ${error.message}`;
+  }
+};
+
+/**
+ * Generates speech from text using TTS API
+ * @param {string} text The text to convert to speech
+ * @returns {Promise<string>} A promise that resolves with audio player markdown
+ */
+export const generateTTS = async (text) => {
+  try {
+    const cleanText = extractTTSText(text);
+
+    console.log('Generating TTS for:', cleanText);
+    console.log('Text length:', cleanText.length);
+
+    if (!cleanText || cleanText.trim().length === 0) {
+      throw new Error('No text provided for TTS');
+    }
+
+    const requestBody = {
+      text: cleanText,
+      lang: 'en'  // Use English instead of auto-detect to avoid unsupported language errors
+    };
+
+    console.log('TTS Request body:', JSON.stringify(requestBody));
+
+    const response = await fetch(TTS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+      mode: 'cors',
+    });
+
+    console.log('TTS response status:', response.status);
+    console.log('TTS response headers:', response.headers);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('TTS API error response:', errorText);
+      throw new Error(`TTS API returned status ${response.status}: ${errorText}`);
+    }
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    // Return audio player HTML
+    return `Here's your text-to-speech audio:\n\n<audio controls src="${audioUrl}" style="width: 100%; max-width: 500px;"></audio>\n\n**Text:** ${cleanText}`;
+  } catch (error) {
+    console.error('Error generating TTS:', error);
+    return `Sorry, I couldn't generate the audio: ${error.message}`;
   }
 };
 
@@ -188,7 +282,7 @@ export const fetchTextResponse = async (userInput, history = [], imageData = nul
 };
 
 /**
- * Main function to fetch bot response (handles both text and images)
+ * Main function to fetch bot response (handles text, images, and TTS)
  * @param {string} userInput The latest message from the user
  * @param {Array<object>} history The past messages in the conversation
  * @param {string} imageData Optional base64 image data for vision analysis
@@ -198,6 +292,11 @@ export const fetchBotResponse = async (userInput, history = [], imageData = null
   // Check if user wants to generate an image
   if (isImageRequest(userInput)) {
     return await generateImage(userInput);
+  }
+
+  // Check if user wants text-to-speech
+  if (isTTSRequest(userInput)) {
+    return await generateTTS(userInput);
   }
 
   // Otherwise, fetch text response from Gemini (with optional image for analysis)

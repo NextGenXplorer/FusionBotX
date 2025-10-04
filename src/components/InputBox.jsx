@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Send, Upload, Mic, Image, X } from 'lucide-react';
+import { Send, Upload, Mic, Image, X, Volume2 } from 'lucide-react';
 
 const InputBox = ({ onSendMessage, isLoading, onImageUpload }) => {
   const [inputValue, setInputValue] = useState('');
@@ -19,6 +19,14 @@ const InputBox = ({ onSendMessage, isLoading, onImageUpload }) => {
   const handleImageGenerate = () => {
     // Pre-fill input with "Generate an image: " prompt
     setInputValue('Generate an image: ');
+    if (mainInputRef.current) {
+      mainInputRef.current.focus();
+    }
+  };
+
+  const handleTTS = () => {
+    // Pre-fill input with "Read this: " prompt for TTS
+    setInputValue('Read this: ');
     if (mainInputRef.current) {
       mainInputRef.current.focus();
     }
@@ -192,6 +200,14 @@ const InputBox = ({ onSendMessage, isLoading, onImageUpload }) => {
             title="Generate Image"
           >
             <Image className="h-4 w-4 md:h-5 md:w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleTTS}
+            className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400"
+            title="Text to Speech"
+          >
+            <Volume2 className="h-4 w-4 md:h-5 md:w-5" />
           </button>
           <button
             type="submit"

@@ -11,16 +11,25 @@ const ChatMessage = ({ message }) => {
   // Safety check for text
   const messageText = text || '';
 
+  // Check if message contains an audio element
+  const audioMatch = messageText.match(/<audio[^>]*src="([^"]+)"[^>]*>/);
+  const hasAudio = audioMatch !== null;
+  const audioUrl = hasAudio ? audioMatch[1] : null;
+
   // Check if message contains an image (both generated and uploaded)
   const imageMatch = messageText.match(/!\[([^\]]*)\]\(([^)]+)\)/);
   const hasImage = imageMatch !== null;
   const imageUrl = hasImage ? imageMatch[2] : null;
 
-  // Extract text without the image markdown for uploaded images
+  // Extract text without the image markdown for uploaded images or audio tags
   let displayText = messageText;
   if (hasImage && isUser) {
     // Remove the image markdown and show only the question
     displayText = messageText.replace(/!\[([^\]]*)\]\(([^)]+)\)\n\n/, '');
+  }
+  if (hasAudio) {
+    // Remove the audio HTML tag for display
+    displayText = messageText.replace(/<audio[^>]*>.*?<\/audio>/g, '').trim();
   }
 
   const handleDownload = async () => {
@@ -78,11 +87,23 @@ const ChatMessage = ({ message }) => {
               <p className="text-sm break-words">{displayText}</p>
             </>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {messageText}
-              </ReactMarkdown>
-            </div>
+            <>
+              {hasAudio && (
+                <div className="mb-3">
+                  <audio
+                    controls
+                    src={audioUrl}
+                    className="w-full max-w-md rounded-lg"
+                    style={{ height: '40px' }}
+                  />
+                </div>
+              )}
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {displayText}
+                </ReactMarkdown>
+              </div>
+            </>
           )}
         </div>
         {/* Download Button for Images */}
