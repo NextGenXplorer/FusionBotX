@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Send, Upload, Mic, Image, X, Volume2 } from 'lucide-react';
+import { Send, Upload, Mic, Image, X, Volume2, Film } from 'lucide-react';
 
 const InputBox = ({ onSendMessage, isLoading, onImageUpload }) => {
   const [inputValue, setInputValue] = useState('');
@@ -27,6 +27,14 @@ const InputBox = ({ onSendMessage, isLoading, onImageUpload }) => {
   const handleTTS = () => {
     // Pre-fill input with "Read this: " prompt for TTS
     setInputValue('Read this: ');
+    if (mainInputRef.current) {
+      mainInputRef.current.focus();
+    }
+  };
+
+  const handleVideoGenerate = () => {
+    // Pre-fill input with "Generate a video: " prompt
+    setInputValue('Generate a video: ');
     if (mainInputRef.current) {
       mainInputRef.current.focus();
     }
@@ -154,8 +162,10 @@ const InputBox = ({ onSendMessage, isLoading, onImageUpload }) => {
         </div>
       )}
       <form onSubmit={handleSubmitWithImage} className="p-2 md:p-4">
-        <div className="flex items-end gap-2 md:gap-3">
-          <div className="flex-grow">
+        {/* Input and Send button on same row, action buttons below */}
+        <div className="flex flex-col gap-2">
+          {/* Input row with Send button */}
+          <div className="flex items-center gap-2">
             <input
               ref={mainInputRef}
               type="text"
@@ -163,59 +173,71 @@ const InputBox = ({ onSendMessage, isLoading, onImageUpload }) => {
               onChange={(e) => setInputValue(e.target.value)}
               placeholder={uploadedImage ? "Ask about the uploaded image..." : "Type your message..."}
               disabled={isLoading}
-              className="w-full px-3 py-2 md:px-4 md:py-3 text-sm md:text-base rounded-2xl border-2 border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 disabled:opacity-50 text-slate-900 dark:text-slate-100"
+              className="flex-grow px-3 py-2 md:px-4 md:py-3 text-sm md:text-base rounded-2xl border-2 border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 disabled:opacity-50 text-slate-900 dark:text-slate-100"
             />
+            <button
+              type="submit"
+              disabled={isLoading || !inputValue.trim()}
+              className="p-2 md:p-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 text-white disabled:from-gray-400 disabled:to-gray-500 hover:shadow-lg hover:shadow-orange-500/30 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 disabled:cursor-not-allowed flex-shrink-0"
+            >
+              <Send className="h-4 w-4 md:h-5 md:w-5" />
+            </button>
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400"
-            title="Upload Image"
-          >
-            <Upload className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleMicToggle}
-            className={`p-2 md:p-3 rounded-2xl transition-all duration-200 ${
-              isRecording
-                ? 'bg-red-500 text-white shadow-lg animate-pulse'
-                : 'bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400'
-            }`}
-            title={isRecording ? 'Stop Recording' : 'Voice Input'}
-          >
-            <Mic className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleImageGenerate}
-            className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400"
-            title="Generate Image"
-          >
-            <Image className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleTTS}
-            className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400"
-            title="Text to Speech"
-          >
-            <Volume2 className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading || !inputValue.trim()}
-            className="p-2 md:p-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 text-white disabled:from-gray-400 disabled:to-gray-500 hover:shadow-lg hover:shadow-orange-500/30 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 disabled:cursor-not-allowed"
-          >
-            <Send className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
+
+          {/* Action buttons row */}
+          <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 flex-shrink-0"
+              title="Upload Image"
+            >
+              <Upload className="h-4 w-4 md:h-5 md:w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleMicToggle}
+              className={`p-2 md:p-3 rounded-2xl transition-all duration-200 flex-shrink-0 ${
+                isRecording
+                  ? 'bg-red-500 text-white shadow-lg animate-pulse'
+                  : 'bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400'
+              }`}
+              title={isRecording ? 'Stop Recording' : 'Voice Input'}
+            >
+              <Mic className="h-4 w-4 md:h-5 md:w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleImageGenerate}
+              className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 flex-shrink-0"
+              title="Generate Image"
+            >
+              <Image className="h-4 w-4 md:h-5 md:w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleTTS}
+              className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 flex-shrink-0"
+              title="Text to Speech"
+            >
+              <Volume2 className="h-4 w-4 md:h-5 md:w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleVideoGenerate}
+              className="p-2 md:p-3 rounded-2xl transition-all duration-200 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 flex-shrink-0"
+              title="Generate Video"
+            >
+              <Film className="h-4 w-4 md:h-5 md:w-5" />
+            </button>
+          </div>
         </div>
       </form>
     </div>

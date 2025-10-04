@@ -50,6 +50,26 @@ const isTTSRequest = (userInput) => {
 };
 
 /**
+ * Detects if the user is requesting video generation
+ * @param {string} userInput The user's message
+ * @returns {boolean} True if video generation is requested
+ */
+const isVideoRequest = (userInput) => {
+  const videoKeywords = [
+    'generate a video',
+    'generate video',
+    'create a video',
+    'create video',
+    'make a video',
+    'make video',
+    'video of',
+    'animate'
+  ];
+  const lowerInput = userInput.toLowerCase();
+  return videoKeywords.some(keyword => lowerInput.includes(keyword));
+};
+
+/**
  * Extracts the image prompt from user input
  * @param {string} userInput The user's message
  * @returns {string} The extracted prompt
@@ -86,6 +106,30 @@ const extractTTSText = (userInput) => {
     /say this:?\s*(.+)/i,
     /text to speech:?\s*(.+)/i,
     /tts:?\s*(.+)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = userInput.match(pattern);
+    if (match) {
+      return match[1].trim();
+    }
+  }
+
+  return userInput;
+};
+
+/**
+ * Extracts the video prompt from user input
+ * @param {string} userInput The user's message
+ * @returns {string} The extracted prompt
+ */
+const extractVideoPrompt = (userInput) => {
+  const patterns = [
+    /generate (?:a )?video:?\s*(.+)/i,
+    /create (?:a )?video:?\s*(.+)/i,
+    /make (?:a )?video:?\s*(.+)/i,
+    /video of:?\s*(.+)/i,
+    /animate:?\s*(.+)/i
   ];
 
   for (const pattern of patterns) {
@@ -166,6 +210,92 @@ export const generateTTS = async (text) => {
   } catch (error) {
     console.error('Error generating TTS:', error);
     return `Sorry, I couldn't generate the audio: ${error.message}`;
+  }
+};
+
+/**
+ * Generates a video using Bytez AI via backend server
+ * @param {string} prompt The video generation prompt
+ * @returns {Promise<string>} A promise that resolves with video player markdown
+ */
+export const generateVideo = async (prompt) => {
+  try {
+    const cleanPrompt = extractVideoPrompt(prompt);
+
+    console.log('Generating video for:', cleanPrompt);
+
+    // Determine API URL - use Netlify function in production, localhost in development
+    const apiUrl = import.meta.env.PROD
+      ? '/.netlify/functions/generate-video'
+      : 'http://localhost:3001/api/generate-video';
+
+    console.log('Using API URL:', apiUrl);
+
+    // Call backend API
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt: cleanPrompt }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Server returned status ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Video generation response:', data);
+
+    const { output } = data;
+
+    if (!output) {
+      throw new Error('No output received from video generation API');
+    }
+
+    console.log('Video output type:', typeof output);
+    console.log('Video output value:', output);
+
+    // Handle different output formats
+    // If output is a direct URL string
+    if (typeof output === 'string' && output.startsWith('http')) {
+      return `Here's your generated video:\n\n<video controls src="${output}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
+    }
+
+    // If output is an array of URLs
+    if (Array.isArray(output) && output.length > 0) {
+      const videoUrl = output[0];
+      if (typeof videoUrl === 'string' && videoUrl.startsWith('http')) {
+        return `Here's your generated video:\n\n<video controls src="${videoUrl}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
+      }
+    }
+
+    // If output is an object with URL property
+    if (typeof output === 'object' && output !== null) {
+      const possibleUrls = [
+        output.url,
+        output.video_url,
+        output.videoUrl,
+        output.file,
+        output.path,
+        output.link
+      ];
+
+      for (const url of possibleUrls) {
+        if (url && typeof url === 'string' && url.startsWith('http')) {
+          return `Here's your generated video:\n\n<video controls src="${url}" style="width: 100%; max-width: 800px;"></video>\n\n**Prompt:** ${cleanPrompt}`;
+        }
+      }
+    }
+
+    // If we can't determine the format, return debug info
+    console.error('Unexpected video output format:', output);
+    const debugInfo = `Output type: ${typeof output}, ${Array.isArray(output) ? 'Array length: ' + output.length : 'Keys: ' + (output && typeof output === 'object' ? Object.keys(output).join(', ') : 'N/A')}`;
+    throw new Error(`Unexpected output format. ${debugInfo}. Check console for details.`);
+  } catch (error) {
+    console.error('Error generating video:', error);
+    return `Sorry, I couldn't generate the video: ${error.message}`;
   }
 };
 
@@ -282,7 +412,7 @@ export const fetchTextResponse = async (userInput, history = [], imageData = nul
 };
 
 /**
- * Main function to fetch bot response (handles text, images, and TTS)
+ * Main function to fetch bot response (handles text, images, TTS, and videos)
  * @param {string} userInput The latest message from the user
  * @param {Array<object>} history The past messages in the conversation
  * @param {string} imageData Optional base64 image data for vision analysis
@@ -292,6 +422,11 @@ export const fetchBotResponse = async (userInput, history = [], imageData = null
   // Check if user wants to generate an image
   if (isImageRequest(userInput)) {
     return await generateImage(userInput);
+  }
+
+  // Check if user wants to generate a video
+  if (isVideoRequest(userInput)) {
+    return await generateVideo(userInput);
   }
 
   // Check if user wants text-to-speech

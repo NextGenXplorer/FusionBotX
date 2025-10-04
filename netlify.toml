@@ -7,6 +7,13 @@
   # The directory that contains the built site.
   publish = "dist"
 
+  # Serverless functions directory
+  functions = "netlify/functions"
+
+# Serverless functions configuration
+[functions]
+  node_bundler = "esbuild"
+
 # This rule is important for single-page applications (SPAs).
 # It ensures that all paths are redirected to index.html,
 # allowing React Router (or any client-side router) to handle them.
