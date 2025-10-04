@@ -152,7 +152,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground font-sans">
+    <div className="flex flex-col h-screen bg-[var(--color-background)] text-foreground font-sans">
       <Header />
       <div className="flex flex-grow overflow-hidden">
         <Sidebar
@@ -162,8 +162,7 @@ function App() {
           onSwitchChat={handleSwitchChat}
           onDeleteChat={handleDeleteChat}
         />
-        <main className="flex-grow flex items-center justify-center p-2 sm:p-4 overflow-hidden">
-          {/* Pass the active session's messages and the handler to ChatWindow */}
+        <main className="flex-grow flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-gradient-to-br from-indigo-50/30 via-purple-50/30 to-pink-50/30 dark:from-indigo-950/10 dark:via-purple-950/10 dark:to-pink-950/10">
           {activeSession ? (
             <ChatWindow
               messages={activeSession.messages}
@@ -173,13 +172,13 @@ function App() {
             />
           ) : (
             <div className="text-center">
-              <p>Loading chats...</p>
+              <p className="text-[var(--color-muted)]">Loading chats...</p>
             </div>
           )}
         </main>
       </div>
       <Footer />
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 z-10">
         <DarkModeToggle isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
       </div>
     </div>

@@ -3,24 +3,57 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #8b5cf6; /* a nice pastel purple */
-  --color-secondary: #ec4899; /* a pastel pink */
-  --color-background: #f9fafb; /* light gray */
-  --color-foreground: #1f2937; /* dark gray */
-  --color-bubble-user: #3b82f6; /* blue */
-  --color-bubble-bot: #e5e7eb; /* light gray */
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-secondary: #8b5cf6;
+  --color-accent: #ec4899;
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-muted: #64748b;
+  --color-bubble-user: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color-bubble-bot: #f1f5f9;
+  --color-border: #e2e8f0;
 }
 
 .dark {
-  --color-primary: #a78bfa; /* lighter purple for dark mode */
-  --color-secondary: #f472b6; /* lighter pink for dark mode */
-  --color-background: #1f2937; /* dark gray */
-  --color-foreground: #f9fafb; /* light gray */
-  --color-bubble-user: #2563eb; /* slightly darker blue */
-  --color-bubble-bot: #4b5563; /* medium gray */
+  --color-primary: #818cf8;
+  --color-primary-dark: #6366f1;
+  --color-secondary: #a78bfa;
+  --color-accent: #f472b6;
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-foreground: #f1f5f9;
+  --color-muted: #94a3b8;
+  --color-bubble-user: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color-bubble-bot: #334155;
+  --color-border: #334155;
 }
 
 body {
   @apply bg-background text-foreground;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth animations */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
 }
