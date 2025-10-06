@@ -1,8 +1,14 @@
 # FusionBotX
 
-Welcome to FusionBotX! This is a smart, friendly study assistant powered by the Gemini API, designed to help you learn, practice, and solve problems across multiple subjects.
+Welcome to FusionBotX!
 
-This project was built with React (using Vite) and styled with Tailwind CSS.
+FusionBotX is an advanced multi-modal AI-powered conversational study assistant designed to revolutionize student learning through intelligent interactions. The project integrates multiple artificial intelligence services to provide comprehensive learning support including conversational AI, image generation, video creation, text-to-speech, and voice input capabilities. Built using React 19 and modern web technologies, FusionBotX leverages Google Gemini 2.0 Flash API for natural language processing, Pollinations AI for image generation, and GttsApi services for multimedia content creation. The system implements a responsive, mobile-first design with persistent session management, enabling students to engage with educational content across multiple modalities. The application addresses the growing need for interactive, personalized learning tools that adapt to diverse learning styles and subject domains. Through comprehensive testing and deployment on Netlify, the project demonstrates successful integration of AI technologies in educational contexts, providing students with an accessible, 24/7 intelligent tutoring system capable of explaining concepts, solving problems step-by-step, and generating visual and audio content to enhance understanding across mathematics, science, programming, and humanities subjects.
+
+## Technical Stack
+
+- **Frontend:** React, Vite, Tailwind CSS
+- **AI Services:** Google Gemini API, Pollinations AI, GttsApi
+- **Deployment:** Netlify
 
 ## Features
 
